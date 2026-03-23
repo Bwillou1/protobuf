@@ -34,7 +34,7 @@ def _aspect_impl(target, ctx):
     exports = [exp[JavaInfo] for exp in ctx.rule.attr.exports]
     proto_toolchain_info = toolchains.find_toolchain(
         ctx,
-        "proto_toolchain_for_javalite",
+        "aspect_proto_toolchain_for_javalite",
         _JAVA_LITE_PROTO_TOOLCHAIN,
     )
     source_jar = None
@@ -72,9 +72,6 @@ _java_lite_proto_aspect = aspect(
     attr_aspects = ["deps", "exports"],
     attrs = toolchains.if_legacy_toolchain({
         _PROTO_TOOLCHAIN_ATTR: attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_java_lite"),
-        ),
-        "_proto_toolchain_for_javalite": attr.label(
             default = Label("//bazel/flags/java:proto_toolchain_for_javalite"),
         ),
     }),
@@ -99,7 +96,7 @@ def _rule_impl(ctx):
     """
     proto_toolchain_info = toolchains.find_toolchain(
         ctx,
-        "proto_toolchain_for_javalite",
+        "aspect_proto_toolchain_for_javalite",
         _JAVA_LITE_PROTO_TOOLCHAIN,
     )
     for dep in ctx.attr.deps:
@@ -168,9 +165,6 @@ rules to generate Java code for.
 """),
     } | toolchains.if_legacy_toolchain({
         _PROTO_TOOLCHAIN_ATTR: attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_java_lite"),
-        ),
-        "_proto_toolchain_for_javalite": attr.label(
             default = Label("//bazel/flags/java:proto_toolchain_for_javalite"),
         ),
     }),
