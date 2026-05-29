@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_WRITER_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_WRITER_H__
 
+#include <charconv>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -117,30 +118,26 @@ class JsonWriter {
 
   void Write(int32_t val) {
     char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
+    auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), val);
+    Write(absl::string_view(buf, static_cast<size_t>(ptr - buf)));
   }
 
   void Write(uint32_t val) {
     char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
+    auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), val);
+    Write(absl::string_view(buf, static_cast<size_t>(ptr - buf)));
   }
 
   void Write(int64_t val) {
     char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
+    auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), val);
+    Write(absl::string_view(buf, static_cast<size_t>(ptr - buf)));
   }
 
   void Write(uint64_t val) {
     char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
+    auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), val);
+    Write(absl::string_view(buf, static_cast<size_t>(ptr - buf)));
   }
 
   template <typename... Ts>
