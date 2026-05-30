@@ -1,0 +1,51 @@
+name: Handle Wait For User Action
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  label_on_comment:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Check for label and update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -x
+
+          if [[ "$EVENT_NAME" == "issue_comment" ]]; then
+            ISSUE_URL=${{ github.event.issue.html_url }}
+            IS_PR=false
+            if [[ -n "${{ github.event.issue.pull_request }}" ]]; then
+              IS_PR=true
+            fi
+          elif [[ "$EVENT_NAME" == "pull_request_review_comment" ]]; then
+            ISSUE_URL=${{ github.event.pull_request.html_url }}
+            IS_PR=true
+          else
+            echo "Unsupported event type: $EVENT_NAME"
+            exit 1
+          fi
+
+          # Determine the command based on whether it's an issue or PR
+          GH_COMMAND="gh issue"
+          if [[ "$IS_PR" == "true" ]]; then
+            GH_COMMAND="gh pr"
+          fi
+
+          # Check if the issue/PR has the 'wait for user action' label
+          HAS_LABEL=$($GH_COMMAND view $ISSUE_URL --json labels --jq '.labels[] | select(.name == "wait for user action") | .name')
+
+          if [[ -n "$HAS_LABEL" ]]; then
+            echo "Item has 'wait for user action' label. Updating labels."
+            $GH_COMMAND edit $ISSUE_URL --remove-label "wait for user action" --add-label "untriaged"
+          else
+            echo "Item does not have 'wait for user action' label. No action needed."
+          fi
